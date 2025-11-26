@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contagem Regressiva - Viagem</title>
+  <style>
+    :root{--accent:#1f8ef1;--muted:#666}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;display:flex;align-items:flex-start;justify-content:center;padding:24px;background:#f7f9fb;color:#111}
+    .card{max-width:900px;width:100%;background:white;border-radius:12px;box-shadow:0 6px 20px rgba(20,20,40,0.07);padding:22px;}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    h1{margin:0;font-size:20px}
+    .when{color:var(--muted);font-size:13px}
+    .countdown{display:flex;gap:12px;margin-top:18px}
+    .unit{flex:1;background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #eef3fb;padding:14px;border-radius:8px;text-align:center}
+    .number{font-size:28px;font-weight:700}
+    .label{color:var(--muted);font-size:12px;margin-top:6px}
+    .big{font-size:40px}
+    .cols{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
+    .panel{background:#fcfdff;border-radius:8px;padding:12px;border:1px solid #eef3fb}
+    textarea{width:100%;min-height:120px;border-radius:6px;padding:10px;border:1px solid #e6eef9;font-size:14px}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:8px}
+    button{background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .ghost{background:transparent;border:1px solid #ddd;color:#333}
+    .checklist{margin-top:8px}
+    .todo{display:flex;gap:8px;align-items:center;padding:8px;border-radius:6px;border:1px dashed #eee;margin-bottom:8px}
+    .todo input[type=text]{flex:1;border:0;background:transparent}
+    .meta{font-size:13px;color:var(--muted);margin-top:10px}
+    .top-actions{display:flex;gap:8px}
+    .print{background:#2d9f67}
+    footer{margin-top:14px;color:var(--muted);font-size:13px}
+    @media(print){body{background:white} .top-actions,.controls{display:none} .cols{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="card" id="app">
+    <header>
+      <div>
+        <h1>Contagem Regressiva para a Viagem</h1>
+        <div class="when">Partida: <strong id="targetReadable">21/12/2025 22:00 (America/Sao_Paulo)</strong></div>
+      </div>
+      <div class="top-actions">
+        <button class="print" onclick="window.print()">Imprimir</button>
+        <button onclick="exportJSON()">Exportar JSON</button>
+        <button class="ghost" onclick="resetAll()">Limpar</button>
+      </div>
+    </header>
+
+    <section class="countdown" aria-live="polite" style="margin-top:14px">
+      <div class="unit">
+        <div class="number big" id="days">--</div>
+        <div class="label">Dias</div>
+      </div>
+      <div class="unit">
+        <div class="number" id="hours">--</div>
+        <div class="label">Horas</div>
+      </div>
+      <div class="unit">
+        <div class="number" id="minutes">--</div>
+        <div class="label">Minutos</div>
+      </div>
+      <div class="unit">
+        <div class="number" id="seconds">--</div>
+        <div class="label">Segundos</div>
+      </div>
+    </section>
+
+    <div class="cols">
+      <div>
+        <div class="panel">
+          <h3>Atividades & Ideias</h3>
+          <p class="meta">Liste aqui atividades divertidas ou tarefas para fazer até a viagem. Elas serão guardadas no navegador.</p>
+          <div class="controls">
+            <input id="newActivity" type="text" placeholder="Ex: Fazer lista de músicas para a viagem" style="flex:1;padding:8px;border-radius:8px;border:1px solid #e6eef9" />
+            <button onclick="addActivity()">Adicionar</button>
+          </div>
+          <div id="activities" style="margin-top:10px"></div>
+        </div>
+
+        <div class="panel" style="margin-top:12px">
+          <h3>Lembretes / Conferir</h3>
+          <p class="meta">Checklist de itens importantes antes da partida.</p>
+          <div class="controls">
+            <input id="newTodo" type="text" placeholder="Ex: Conferir documentos" style="flex:1;padding:8px;border-radius:8px;border:1px solid #e6eef9" />
+            <button onclick="addTodo()">Adicionar</button>
+          </div>
+          <div id="todos" class="checklist"></div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="panel">
+          <h3>Notas rápidas</h3>
+          <textarea id="notes" placeholder="Anote aqui: o que comprar, quem avisar, número de reservas, etc."></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button onclick="saveNotes()">Salvar</button>
+            <button class="ghost" onclick="loadNotes()">Carregar</button>
+          </div>
+          <div class="meta" style="margin-top:8px">Salvamento automático a cada alteração também está ativo.</div>
+        </div>
+
+        <div class="panel" style="margin-top:12px">
+          <h3>Resumo da Viagem</h3>
+          <p class="meta"><strong>Destino:</strong> ____________________________</p>
+          <p class="meta"><strong>Passagem:</strong> __________________________</p>
+          <p class="meta"><strong>Bagagem:</strong> ___________________________</p>
+          <p class="meta"><strong>Telefones úteis:</strong> ____________________</p>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      Dica: mantenham esta página em tela cheia no computador ou imprimam e colem na geladeira para acompanhar a contagem e tarefas.
+    </footer>
+  </div>
+
+  <script>
+    // Target date: 21 Dec 2025, 22:00 America/Sao_Paulo (UTC-03:00)
+    const target = new Date('2025-12-21T22:00:00-03:00');
+
+    // Elements
+    const elDays = document.getElementById('days');
+    const elHours = document.getElementById('hours');
+    const elMinutes = document.getElementById('minutes');
+    const elSeconds = document.getElementById('seconds');
+    const elTargetReadable = document.getElementById('targetReadable');
+
+    function updateCountdown(){
+      const now = new Date();
+      let diff = Math.max(0, target - now);
+
+      const days = Math.floor(diff / (1000*60*60*24));
+      diff -= days * (1000*60*60*24);
+      const hours = Math.floor(diff / (1000*60*60));
+      diff -= hours * (1000*60*60);
+      const minutes = Math.floor(diff / (1000*60));
+      diff -= minutes * (1000*60);
+      const seconds = Math.floor(diff / 1000);
+
+      elDays.textContent = days;
+      elHours.textContent = String(hours).padStart(2,'0');
+      elMinutes.textContent = String(minutes).padStart(2,'0');
+      elSeconds.textContent = String(seconds).padStart(2,'0');
+
+      if (target - now <= 0){
+        // arrived
+        document.title = 'Viagem: já é hora!';
+      } else {
+        document.title = `Faltam ${days}d ${hours}h ${minutes}m`;
+      }
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // LocalStorage keys
+    const KEY_ACT = 'viagem_activities_v1';
+    const KEY_TODO = 'viagem_todos_v1';
+    const KEY_NOTES = 'viagem_notes_v1';
+
+    // Activities
+    function loadActivities(){
+      const raw = localStorage.getItem(KEY_ACT);
+      return raw ? JSON.parse(raw) : [];
+    }
+    function saveActivities(list){ localStorage.setItem(KEY_ACT, JSON.stringify(list)); renderActivities(); }
+    function renderActivities(){
+      const container = document.getElementById('activities');
+      container.innerHTML='';
+      const list = loadActivities();
+      if (!list.length) { container.innerHTML = '<div class="meta">Nenhuma atividade. Adicione uma acima.</div>'; return }
+      list.forEach((a, i) =>{
+        const div = document.createElement('div'); div.className='todo';
+        const txt = document.createElement('div'); txt.style.flex='1'; txt.textContent = a.text;
+        const btn = document.createElement('button'); btn.className='ghost'; btn.textContent='Remover'; btn.onclick = ()=>{ list.splice(i,1); saveActivities(list)};
+        div.appendChild(txt); div.appendChild(btn); container.appendChild(div);
+      });
+    }
+    function addActivity(){
+      const v = document.getElementById('newActivity').value.trim(); if(!v) return; const list = loadActivities(); list.push({text:v}); saveActivities(list); document.getElementById('newActivity').value='';
+    }
+
+    // Todos (checklist)
+    function loadTodos(){ const raw = localStorage.getItem(KEY_TODO); return raw?JSON.parse(raw):[] }
+    function saveTodos(list){ localStorage.setItem(KEY_TODO, JSON.stringify(list)); renderTodos(); }
+    function renderTodos(){ const container = document.getElementById('todos'); container.innerHTML=''; const list = loadTodos(); if(!list.length){container.innerHTML='<div class="meta">Nenhum lembrete. Adicione um acima.</div>'; return}
+      list.forEach((t,i)=>{
+        const row = document.createElement('div'); row.className='todo';
+        const chk = document.createElement('input'); chk.type='checkbox'; chk.checked = !!t.done; chk.onchange = ()=>{ t.done = chk.checked; saveTodos(list)};
+        const txt = document.createElement('input'); txt.type='text'; txt.value = t.text; txt.onchange = ()=>{ t.text = txt.value; saveTodos(list)};
+        const del = document.createElement('button'); del.className='ghost'; del.textContent='X'; del.onclick = ()=>{ list.splice(i,1); saveTodos(list)};
+        row.appendChild(chk); row.appendChild(txt); row.appendChild(del); container.appendChild(row);
+      });
+    }
+    function addTodo(){ const v = document.getElementById('newTodo').value.trim(); if(!v) return; const list = loadTodos(); list.push({text:v,done:false}); saveTodos(list); document.getElementById('newTodo').value=''; }
+
+    // Notes
+    const notesEl = document.getElementById('notes');
+    function saveNotes(){ localStorage.setItem(KEY_NOTES, notesEl.value); showSavedTip(); }
+    function loadNotes(){ notesEl.value = localStorage.getItem(KEY_NOTES) || ''; }
+    notesEl.addEventListener('input', ()=>{ localStorage.setItem(KEY_NOTES, notesEl.value) });
+
+    // Export/Import
+    function exportJSON(){
+      const payload = {target: target.toISOString(), activities: loadActivities(), todos: loadTodos(), notes: localStorage.getItem(KEY_NOTES)};
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download='viagem-dados.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+
+    function resetAll(){ if (!confirm('Deseja realmente limpar todas as atividades, lembretes e notas salvos localmente?')) return; localStorage.removeItem(KEY_ACT); localStorage.removeItem(KEY_TODO); localStorage.removeItem(KEY_NOTES); renderActivities(); renderTodos(); loadNotes(); }
+
+    function showSavedTip(){ /* pequena indicação visual opcional - aqui simplificada */ console.log('Notas salvas') }
+
+    // Inicializa
+    (function init(){
+      // mostra a data alvo legível (já preenchida no HTML, mas mantém caso queira editar o código)
+      elTargetReadable.textContent = target.toLocaleString('pt-BR', {dateStyle:'short', timeStyle:'short'}) + ' (America/Sao_Paulo)';
+      renderActivities(); renderTodos(); loadNotes();
+    })();
+  </script>
+</body>
+</html>
