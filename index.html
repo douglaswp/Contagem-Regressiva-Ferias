@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Painel de Viagem</title>
   <style>
-    /* Variáveis de Cores (Suporte a Tema Claro/Escuro) */
+    /* Variáveis de Cores */
     :root {
       --accent: #1f8ef1;
       --accent-hover: #166dba;
@@ -20,7 +20,6 @@
       --input-bg: #ffffff;
     }
 
-    /* Classe para Tema Escuro */
     body.dark-mode {
       --bg-body: #121212;
       --bg-card: #1e1e1e;
@@ -46,7 +45,8 @@
     }
 
     .card {
-      max-width: 900px;
+      max-width: 1000px;
+      /* Aumentei um pouco para caber melhor lado a lado */
       width: 100%;
       background: var(--bg-card);
       border-radius: 12px;
@@ -78,7 +78,7 @@
       color: var(--accent);
     }
 
-    /* Countdown Styling */
+    /* Countdown */
     .countdown {
       display: flex;
       gap: 12px;
@@ -113,10 +113,11 @@
       color: var(--accent);
     }
 
-    /* Layout Columns */
-    .cols {
+    /* NOVO LAYOUT DE GRID */
+    .dashboard-grid {
       display: grid;
-      grid-template-columns: 1fr 360px;
+      grid-template-columns: 1fr 1fr;
+      /* Duas colunas iguais */
       gap: 18px;
       margin-top: 18px;
     }
@@ -126,9 +127,11 @@
       border-radius: 8px;
       padding: 16px;
       border: 1px solid var(--border);
-      height: 100%;
-      /* Para alinhar alturas se necessário */
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      /* Força altura igual na mesma linha do grid */
     }
 
     h3 {
@@ -138,7 +141,6 @@
       color: var(--text-main);
     }
 
-    /* Inputs e Textareas comuns */
     textarea,
     input[type="text"],
     input[type="datetime-local"] {
@@ -155,9 +157,11 @@
     textarea {
       min-height: 120px;
       resize: vertical;
+      flex-grow: 1;
     }
 
-    /* Controles e Botões */
+    /* textarea cresce para preencher espaço */
+
     .controls {
       display: flex;
       gap: 8px;
@@ -199,9 +203,9 @@
       font-size: 16px;
     }
 
-    /* Listas */
     .checklist {
       margin-top: 12px;
+      flex-grow: 1;
     }
 
     .todo {
@@ -229,7 +233,6 @@
       line-height: 1.4;
     }
 
-    /* Resumo Inputs */
     .summary-row {
       margin-bottom: 12px;
     }
@@ -246,7 +249,7 @@
       width: 100%;
     }
 
-    /* Settings Area */
+    /* Config Area */
     details.config-area {
       background: var(--bg-panel);
       border: 1px solid var(--border);
@@ -282,44 +285,9 @@
       text-align: center;
     }
 
-    /* Print Styles */
-    @media(print) {
-      body {
-        background: white;
-        color: black;
-      }
-
-      .card {
-        box-shadow: none;
-        border: none;
-      }
-
-      .top-actions,
-      .controls,
-      .config-area button,
-      button.ghost {
-        display: none;
-      }
-
-      .cols {
-        grid-template-columns: 1fr;
-      }
-
-      input,
-      textarea {
-        border: none;
-        padding: 0;
-        resize: none;
-        background: transparent;
-      }
-
-      .panel {
-        border: 1px solid #ddd;
-      }
-    }
-
-    @media(max-width: 700px) {
-      .cols {
+    /* Responsivo: Celular vira 1 coluna */
+    @media(max-width: 768px) {
+      .dashboard-grid {
         grid-template-columns: 1fr;
       }
 
@@ -332,6 +300,44 @@
         width: 100%;
         justify-content: space-between;
         margin-top: 10px;
+      }
+    }
+
+    @media(print) {
+      body {
+        background: white;
+        color: black;
+      }
+
+      .card {
+        box-shadow: none;
+        border: none;
+        max-width: 100%;
+      }
+
+      .top-actions,
+      .controls,
+      .config-area button,
+      button.ghost {
+        display: none;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      /* Mantém 2 colunas na impressão se couber */
+      input,
+      textarea {
+        border: none;
+        padding: 0;
+        resize: none;
+        background: transparent;
+      }
+
+      .panel {
+        border: 1px solid #ddd;
       }
     }
   </style>
@@ -383,77 +389,67 @@
       </div>
     </section>
 
-    <div class="cols">
-      <div>
-        <div class="panel">
-          <h3>Atividades & Ideias</h3>
-          <p class="meta">Coisas divertidas para fazer.</p>
-          <div class="controls">
-            <input id="newActivity" type="text" placeholder="Ex: Playlist Spotify..." />
-            <button onclick="addActivity()">+</button>
-          </div>
-          <div id="activities" style="margin-top:10px"></div>
-        </div>
+    <div class="dashboard-grid">
 
-        <div class="panel" style="margin-top:18px">
-          <h3>Checklist (Lembretes)</h3>
-          <p class="meta">Não esquecer antes de sair.</p>
-          <div class="controls">
-            <input id="newTodo" type="text" placeholder="Ex: Passaportes..." />
-            <button onclick="addTodo()">+</button>
-          </div>
-          <div id="todos" class="checklist"></div>
+      <div class="panel">
+        <h3>Resumo da Viagem</h3>
+        <p class="meta">Dados principais.</p>
+
+        <div class="summary-row">
+          <label>Destino:</label>
+          <input type="text" id="sumDest" placeholder="Cidade / País" oninput="saveSummary()">
+        </div>
+        <div class="summary-row">
+          <label>Passagem / Voo:</label>
+          <input type="text" id="sumTicket" placeholder="Cód. Reserva ou Horário" oninput="saveSummary()">
+        </div>
+        <div class="summary-row">
+          <label>Bagagem:</label>
+          <input type="text" id="sumBaggage" placeholder="Peso permitido / Itens" oninput="saveSummary()">
+        </div>
+        <div class="summary-row">
+          <label>Telefones Úteis:</label>
+          <input type="text" id="sumPhone" placeholder="Hotel, Seguro, Emergência" oninput="saveSummary()">
         </div>
       </div>
 
-      <aside>
-        <div class="panel">
-          <h3>Resumo da Viagem</h3>
-          <p class="meta">Preencha os dados principais.</p>
+      <div class="panel">
+        <h3>Notas Rápidas</h3>
+        <p class="meta">Anotações gerais.</p>
+        <textarea id="notes" placeholder="Espaço livre..."></textarea>
+      </div>
 
-          <div class="summary-row">
-            <label>Destino:</label>
-            <input type="text" id="sumDest" placeholder="Cidade / País" oninput="saveSummary()">
-          </div>
-          <div class="summary-row">
-            <label>Passagem / Voo:</label>
-            <input type="text" id="sumTicket" placeholder="Cód. Reserva ou Horário" oninput="saveSummary()">
-          </div>
-          <div class="summary-row">
-            <label>Bagagem:</label>
-            <input type="text" id="sumBaggage" placeholder="Peso permitido / Itens" oninput="saveSummary()">
-          </div>
-          <div class="summary-row">
-            <label>Telefones Úteis:</label>
-            <input type="text" id="sumPhone" placeholder="Hotel, Seguro, Emergência" oninput="saveSummary()">
-          </div>
+      <div class="panel">
+        <h3>Checklist (Lembretes)</h3>
+        <p class="meta">Não esquecer antes de sair.</p>
+        <div class="controls">
+          <input id="newTodo" type="text" placeholder="Ex: Passaportes..." />
+          <button onclick="addTodo()">+</button>
         </div>
+        <div id="todos" class="checklist"></div>
+      </div>
 
-        <div class="panel" style="margin-top:18px">
-          <h3>Notas Rápidas</h3>
-          <textarea id="notes" placeholder="Espaço livre para anotações gerais..."></textarea>
+      <div class="panel">
+        <h3>Atividades & Ideias</h3>
+        <p class="meta">Coisas divertidas para fazer.</p>
+        <div class="controls">
+          <input id="newActivity" type="text" placeholder="Ex: Playlist Spotify..." />
+          <button onclick="addActivity()">+</button>
         </div>
-      </aside>
+        <div id="activities" class="checklist"></div>
+      </div>
+
     </div>
 
     <footer>
-      Boa viagem! Mantenha esta página salva nos favoritos.
+      Boa viagem! Mantenha esta página salva.
     </footer>
   </div>
 
   <script>
-    // --- Gerenciamento de Estado (LocalStorage Keys) ---
-    const KEYS = {
-      THEME: 'viagem_theme',
-      START: 'viagem_start_date',
-      END: 'viagem_end_date',
-      ACT: 'viagem_activities',
-      TODO: 'viagem_todos',
-      NOTES: 'viagem_notes',
-      SUMMARY: 'viagem_summary_data'
-    };
+    // --- JS Mantido Igual ---
+    const KEYS = { THEME: 'viagem_theme', START: 'viagem_start_date', END: 'viagem_end_date', ACT: 'viagem_activities', TODO: 'viagem_todos', NOTES: 'viagem_notes', SUMMARY: 'viagem_summary_data' };
 
-    // --- Elementos DOM ---
     const elDays = document.getElementById('days');
     const elHours = document.getElementById('hours');
     const elMinutes = document.getElementById('minutes');
@@ -462,34 +458,19 @@
     const inpStart = document.getElementById('confStart');
     const inpEnd = document.getElementById('confEnd');
 
-    // --- Configuração e Datas ---
     let targetDate = null;
 
     function loadConfig() {
-      // Carregar Datas
       const savedStart = localStorage.getItem(KEYS.START);
       const savedEnd = localStorage.getItem(KEYS.END);
-
-      // Data padrão (futuro próximo) se não houver nada salvo
-      const defaultDate = new Date();
-      defaultDate.setDate(defaultDate.getDate() + 30);
-      defaultDate.setHours(8, 0, 0, 0);
-
+      const defaultDate = new Date(); defaultDate.setDate(defaultDate.getDate() + 30); defaultDate.setHours(8, 0, 0, 0);
       const start = savedStart ? new Date(savedStart) : defaultDate;
       const end = savedEnd ? new Date(savedEnd) : null;
-
       targetDate = start;
 
-      // Preencher Inputs de Configuração (formato para datetime-local: YYYY-MM-DDTHH:mm)
-      const toLocalISO = (d) => {
-        if (!d) return '';
-        const offset = d.getTimezoneOffset() * 60000;
-        return new Date(d.getTime() - offset).toISOString().slice(0, 16);
-      };
-
+      const toLocalISO = (d) => { if (!d) return ''; const offset = d.getTimezoneOffset() * 60000; return new Date(d.getTime() - offset).toISOString().slice(0, 16); };
       inpStart.value = toLocalISO(start);
       if (end) inpEnd.value = toLocalISO(end);
-
       updateDateDisplay(start, end);
     }
 
@@ -499,51 +480,21 @@
       elDispEnd.textContent = end ? end.toLocaleDateString('pt-BR', fmt) : '(Não definido)';
     }
 
-    // Listeners para Inputs de Data
-    inpStart.addEventListener('change', (e) => {
-      if (!e.target.value) return;
-      const d = new Date(e.target.value);
-      localStorage.setItem(KEYS.START, d.toISOString());
-      targetDate = d;
-      updateDateDisplay(d, inpEnd.value ? new Date(inpEnd.value) : null);
-      updateCountdown();
-    });
+    inpStart.addEventListener('change', (e) => { if (!e.target.value) return; const d = new Date(e.target.value); localStorage.setItem(KEYS.START, d.toISOString()); targetDate = d; updateDateDisplay(d, inpEnd.value ? new Date(inpEnd.value) : null); updateCountdown(); });
+    inpEnd.addEventListener('change', (e) => { if (!e.target.value) { localStorage.removeItem(KEYS.END); updateDateDisplay(targetDate, null); return; } const d = new Date(e.target.value); localStorage.setItem(KEYS.END, d.toISOString()); updateDateDisplay(targetDate, d); });
 
-    inpEnd.addEventListener('change', (e) => {
-      if (!e.target.value) { localStorage.removeItem(KEYS.END); updateDateDisplay(targetDate, null); return; }
-      const d = new Date(e.target.value);
-      localStorage.setItem(KEYS.END, d.toISOString());
-      updateDateDisplay(targetDate, d);
-    });
-
-
-    // --- Contagem Regressiva ---
     function updateCountdown() {
       if (!targetDate) return;
       const now = new Date();
       let diff = Math.max(0, targetDate - now);
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      diff -= days * (1000 * 60 * 60 * 24);
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      diff -= hours * (1000 * 60 * 60);
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24)); diff -= days * (1000 * 60 * 60 * 24);
+      const hours = Math.floor(diff / (1000 * 60 * 60)); diff -= hours * (1000 * 60 * 60);
       const minutes = Math.floor(diff / (1000 * 60));
-
-      elDays.textContent = days;
-      elHours.textContent = String(hours).padStart(2, '0');
-      elMinutes.textContent = String(minutes).padStart(2, '0');
-
-      if (targetDate - now <= 0) {
-        document.title = 'É hoje! Boa viagem!';
-        elDays.parentElement.style.borderColor = 'var(--accent)'; // Highlight visual
-      } else {
-        document.title = `Faltam ${days}d ${hours}h`;
-      }
+      elDays.textContent = days; elHours.textContent = String(hours).padStart(2, '0'); elMinutes.textContent = String(minutes).padStart(2, '0');
+      if (targetDate - now <= 0) { document.title = 'É hoje!'; } else { document.title = `Faltam ${days}d ${hours}h`; }
     }
-    // Atualiza a cada 10 segundos (segundos foram removidos da tela, não precisa de 1s refresh)
     setInterval(updateCountdown, 10000);
 
-    // --- Resumo da Viagem (Campos Editáveis) ---
     function loadSummary() {
       const raw = localStorage.getItem(KEYS.SUMMARY);
       const data = raw ? JSON.parse(raw) : {};
@@ -552,18 +503,11 @@
       document.getElementById('sumBaggage').value = data.baggage || '';
       document.getElementById('sumPhone').value = data.phone || '';
     }
-
     function saveSummary() {
-      const data = {
-        dest: document.getElementById('sumDest').value,
-        ticket: document.getElementById('sumTicket').value,
-        baggage: document.getElementById('sumBaggage').value,
-        phone: document.getElementById('sumPhone').value
-      };
+      const data = { dest: document.getElementById('sumDest').value, ticket: document.getElementById('sumTicket').value, baggage: document.getElementById('sumBaggage').value, phone: document.getElementById('sumPhone').value };
       localStorage.setItem(KEYS.SUMMARY, JSON.stringify(data));
     }
 
-    // --- Atividades & Todos (Lógica mantida e simplificada) ---
     function getList(key) { return JSON.parse(localStorage.getItem(key) || '[]'); }
     function setList(key, list) { localStorage.setItem(key, JSON.stringify(list)); }
 
@@ -586,77 +530,28 @@
         const div = document.createElement('div'); div.className = 'todo';
         const checked = item.done ? 'checked' : '';
         const style = item.done ? 'text-decoration:line-through; color:var(--text-muted)' : '';
-
-        div.innerHTML = `
-          <input type="checkbox" ${checked} onchange="toggleTodo(${i})">
-          <input type="text" value="${item.text}" onchange="editTodo(${i}, this.value)" style="flex:1; ${style}">
-          <button class="ghost" onclick="removeItem('${KEYS.TODO}', ${i})">X</button>
-        `;
+        div.innerHTML = `<input type="checkbox" ${checked} onchange="toggleTodo(${i})"><input type="text" value="${item.text}" onchange="editTodo(${i}, this.value)" style="flex:1; ${style}"><button class="ghost" onclick="removeItem('${KEYS.TODO}', ${i})">X</button>`;
         container.appendChild(div);
       });
     }
 
-    function addActivity() {
-      const el = document.getElementById('newActivity');
-      const val = el.value.trim();
-      if (!val) return;
-      const list = getList(KEYS.ACT); list.push(val); setList(KEYS.ACT, list);
-      el.value = ''; renderActivities();
-    }
+    function addActivity() { const el = document.getElementById('newActivity'); const val = el.value.trim(); if (!val) return; const list = getList(KEYS.ACT); list.push(val); setList(KEYS.ACT, list); el.value = ''; renderActivities(); }
+    function addTodo() { const el = document.getElementById('newTodo'); const val = el.value.trim(); if (!val) return; const list = getList(KEYS.TODO); list.push({ text: val, done: false }); setList(KEYS.TODO, list); el.value = ''; renderTodos(); }
+    function removeItem(key, index) { const list = getList(key); list.splice(index, 1); setList(key, list); key === KEYS.ACT ? renderActivities() : renderTodos(); }
+    function toggleTodo(index) { const list = getList(KEYS.TODO); list[index].done = !list[index].done; setList(KEYS.TODO, list); renderTodos(); }
+    function editTodo(index, val) { const list = getList(KEYS.TODO); list[index].text = val; setList(KEYS.TODO, list); }
 
-    function addTodo() {
-      const el = document.getElementById('newTodo');
-      const val = el.value.trim();
-      if (!val) return;
-      const list = getList(KEYS.TODO); list.push({ text: val, done: false }); setList(KEYS.TODO, list);
-      el.value = ''; renderTodos();
-    }
-
-    function removeItem(key, index) {
-      const list = getList(key); list.splice(index, 1); setList(key, list);
-      key === KEYS.ACT ? renderActivities() : renderTodos();
-    }
-
-    function toggleTodo(index) {
-      const list = getList(KEYS.TODO); list[index].done = !list[index].done; setList(KEYS.TODO, list); renderTodos();
-    }
-    function editTodo(index, val) {
-      const list = getList(KEYS.TODO); list[index].text = val; setList(KEYS.TODO, list);
-    }
-
-    // --- Notas ---
     const notesEl = document.getElementById('notes');
     notesEl.value = localStorage.getItem(KEYS.NOTES) || '';
     notesEl.addEventListener('input', () => localStorage.setItem(KEYS.NOTES, notesEl.value));
 
-    // --- Tema Escuro ---
     const themeToggleBtn = document.getElementById('themeToggle');
-    function loadTheme() {
-      const isDark = localStorage.getItem(KEYS.THEME) === 'dark';
-      if (isDark) document.body.classList.add('dark-mode');
-    }
-    themeToggleBtn.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-      const isDark = document.body.classList.contains('dark-mode');
-      localStorage.setItem(KEYS.THEME, isDark ? 'dark' : 'light');
-    });
+    function loadTheme() { const isDark = localStorage.getItem(KEYS.THEME) === 'dark'; if (isDark) document.body.classList.add('dark-mode'); }
+    themeToggleBtn.addEventListener('click', () => { document.body.classList.toggle('dark-mode'); const isDark = document.body.classList.contains('dark-mode'); localStorage.setItem(KEYS.THEME, isDark ? 'dark' : 'light'); });
 
-    // --- Reset Global ---
-    function resetAll() {
-      if (!confirm('Isso apagará todas as configurações, listas e notas. Continuar?')) return;
-      localStorage.clear();
-      location.reload();
-    }
+    function resetAll() { if (!confirm('Isso apagará todas as configurações, listas e notas. Continuar?')) return; localStorage.clear(); location.reload(); }
 
-    // --- Inicialização ---
-    (function init() {
-      loadTheme();
-      loadConfig();
-      updateCountdown();
-      renderActivities();
-      renderTodos();
-      loadSummary();
-    })();
+    (function init() { loadTheme(); loadConfig(); updateCountdown(); renderActivities(); renderTodos(); loadSummary(); })();
   </script>
 </body>
 
