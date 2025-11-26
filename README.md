@@ -62,7 +62,7 @@ Para hospedar gratuitamente no GitHub Pages:
 1. Faça um fork deste repositório
 2. Vá em Settings → Pages
 3. Selecione a branch `main` como source
-4. Sua aplicação estará disponível em: `https://seu-usuario.github.io/Contagem-Regressiva-Ferias/`
+4. Sua aplicação estará disponível em: `https://seu-usuario.github.io/nome-do-repositorio/`
 
 ### Outros Servidores
 
